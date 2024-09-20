@@ -27,6 +27,10 @@ const TransactionModel = new mongoose.Schema({
     ref: "Category",
     required: true,
   },
+  invoice: {
+    type: String,
+    default: null,
+  },
   date: {
     type: Date,
     default: Date.now,
