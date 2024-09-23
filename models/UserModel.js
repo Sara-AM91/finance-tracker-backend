@@ -35,7 +35,7 @@ UserModel.statics.signup = async function (
   console.log("Is valid email:", validator.isEmail(email));
 
   if (exists) {
-    throw Error("Email already in use");
+    throw Error("Email already exists");
   }
 
   //Validate required fields
