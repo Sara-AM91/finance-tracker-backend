@@ -3,7 +3,11 @@ const validator = require("validator");
 const bcrypt = require("bcrypt");
 
 const UserModel = new mongoose.Schema({
-  name: {
+  firstName: {
+    type: String,
+    required: true,
+  },
+  lastName: {
     type: String,
     required: true,
   },
@@ -11,6 +15,7 @@ const UserModel = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    validate: [validator.isEmail, "Invalid email"],
   },
   password: {
     type: String,
@@ -19,9 +24,12 @@ const UserModel = new mongoose.Schema({
 });
 
 // creating a custom static method
-UserModel.statics.signup = async function (email, password, name) {
-  //validation
-
+UserModel.statics.signup = async function (
+  firstName,
+  lastName,
+  email,
+  password
+) {
   const exists = await this.findOne({ email });
   console.log("Validating email:", email);
   console.log("Is valid email:", validator.isEmail(email));
@@ -30,26 +38,34 @@ UserModel.statics.signup = async function (email, password, name) {
     throw Error("Email already in use");
   }
 
-  if (!name || !email || !password) {
+  //Validate required fields
+  if (!firstName || !lastName || !email || !password) {
     throw Error("All fields must be filled");
   }
 
+  //Validate email
   if (!validator.isEmail(email.trim())) {
-    throw Error("email is not valid");
+    throw Error("Email is not valid");
   }
 
+  //Validate password strength
   if (!validator.isStrongPassword(password)) {
     throw Error(
-      "Make sure to use at least 8 characters, one upper case letter, a number and a symbol"
+      "Password must be at least 8 characters, include a number, uppercase letter, and a special character"
     );
   }
 
+  //Hash the password
   const salt = await bcrypt.genSalt(10);
-
   const hash = await bcrypt.hash(password, salt);
 
-  const user = await this.create({ name, email, password: hash });
-
+  // Create user
+  const user = await this.create({
+    firstName,
+    lastName,
+    email,
+    password: hash,
+  });
   return user;
 };
 
