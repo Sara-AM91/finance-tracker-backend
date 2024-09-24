@@ -2,40 +2,63 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcrypt");
 
+// Custom Error Classes for better error handling
+class ValidationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "ValidationError";
+    this.statusCode = 400; //Bad request
+  }
+}
+
+class AuthError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "AuthError";
+    this.statusCode = 401; //Unauthorized
+  }
+}
+
 const UserModel = new mongoose.Schema({
   firstName: {
     type: String,
-    required: true,
+    required: [true, "First name is required"],
   },
   lastName: {
     type: String,
-    required: true,
+    required: [true, "Last name is required"],
   },
   email: {
     type: String,
-    required: true,
+    required: [true, "Email is required"],
     unique: true,
-    validate: [validator.isEmail, "Invalid email"],
+    validate: {
+      validator: validator.isEmail,
+      message: "Please provide a valid email address",
+    },
   },
   password: {
     type: String,
-    required: true,
+    required: [true, "Password is required"],
   },
 });
 
-// creating a custom static method
+//Creating a custom static method
 UserModel.statics.signup = async function (
   firstName,
   lastName,
   email,
   password
 ) {
-  const exists = await this.findOne({ email });
-  console.log("Validating email:", email);
-  console.log("Is valid email:", validator.isEmail(email));
+  //Check if all fields are provided
+  if (!firstName || !lastName || !email || !password) {
+    throw new ValidationError("All fields must be filled");
+  }
 
-  if (exists) {
-    throw Error("Email already exists");
+  //Check if the email is already registered
+  const existingUser = await this.findOne({ email });
+  if (existingUser) {
+    throw new ValidationError("Email already exists");
   }
 
   //Validate required fields
@@ -43,48 +66,51 @@ UserModel.statics.signup = async function (
     throw Error("All fields must be filled");
   }
 
-  //Validate email
+  //Validate email format
   if (!validator.isEmail(email.trim())) {
-    throw Error("Email is not valid");
+    throw new ValidationError("Invalid email address");
   }
 
   //Validate password strength
   if (!validator.isStrongPassword(password)) {
-    throw Error(
-      "Password must be at least 8 characters, include a number, uppercase letter, and a special character"
+    throw new ValidationError(
+      "Password must be at least 8 characters long, include a number, uppercase letter, and a special character"
     );
   }
 
   //Hash the password
   const salt = await bcrypt.genSalt(10);
-  const hash = await bcrypt.hash(password, salt);
+  const hashedPassword = await bcrypt.hash(password, salt);
 
-  // Create user
+  //Create user
   const user = await this.create({
     firstName,
     lastName,
     email,
-    password: hash,
+    password: hashedPassword,
   });
   return user;
 };
 
-//static custom login method
+//Custom static login method
 UserModel.statics.login = async function (email, password) {
+  //Check if both email and password are provided
   if (!email || !password) {
-    throw Error("All fields must be filled");
+    throw Error("Both email and password are required");
   }
 
+  //Check if the user exists
   const user = await this.findOne({ email });
 
   if (!user) {
     throw Error("Incorrect email");
   }
 
-  const match = await bcrypt.compare(password, user.password);
+  //Compare the provided password with the hashed password
+  const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
-  if (!match) {
-    throw Error("Incorrect password");
+  if (!isPasswordCorrect) {
+    throw new AuthError("Incorrect password");
   }
 
   return user;
