@@ -6,6 +6,7 @@ const {
   updateCategoryById,
   deleteCategoryById,
   getCategoriesByType,
+  getGlobalCategories,
 } = require("../controllers/categoryControllers");
 
 const { requireAuth } = require("../middlewares/requireAuth");
@@ -15,7 +16,8 @@ app
   .get(requireAuth, getUserCategories)
   .post(requireAuth, createCustomCategory);
 
-app.route("/filter").get(getCategoriesByType);
+app.get("/filter", requireAuth, getCategoriesByType);
+app.get("/global", getGlobalCategories);
 
 app
   .route("/:id")
