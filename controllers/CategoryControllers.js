@@ -5,11 +5,29 @@ const getCategoriesByType = async (req, res) => {
   const userId = req.user ? req.user._id : null;
 
   try {
-    const query = userId
-      ? { categoryType, $or: [{ user: null }, { user: userId }] }
-      : { categoryType, user: null };
+    //Fetch both global categories (user: null) and user-specific categories (user: userId)
+    const query = {
+      categoryType,
+      $or: [{ user: null }, { user: userId }],
+    };
 
-    const categories = await Category.find(query);
+    const categories = await Category.find(query).sort({ title: 1 });
+
+    res.status(200).json(categories);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getGlobalCategories = async (req, res) => {
+  const { categoryType } = req.query;
+
+  try {
+    const categories = await Category.find({
+      categoryType,
+      user: null,
+    }).sort({ title: 1 });
+
     res.status(200).json(categories);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -108,4 +126,5 @@ module.exports = {
   updateCategoryById,
   deleteCategoryById,
   getCategoriesByType,
+  getGlobalCategories,
 };
