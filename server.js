@@ -5,6 +5,7 @@ const dbinit = require("./db/dbinit");
 
 const userRoutes = require("./routes/userRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
+const transactionRoutes = require("./routes/transactionRoutes");
 
 dotenv.config();
 dbinit();
@@ -15,6 +16,7 @@ app.use(express.json());
 
 app.use("/user", userRoutes);
 app.use("/categories", categoryRoutes);
+app.use("/transactions", transactionRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

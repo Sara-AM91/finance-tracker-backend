@@ -143,15 +143,13 @@ const changePassword = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-    const updateUser = await User.findByIdAndUpdate(
+    await User.findByIdAndUpdate(
       userId,
       { password: hashedPassword },
       { new: true }
     );
 
-    res
-      .status(200)
-      .json({ message: "Password succesfully changed:", updateUser });
+    res.status(200).json({ message: "Password succesfully changed" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

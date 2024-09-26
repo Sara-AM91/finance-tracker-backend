@@ -102,7 +102,7 @@ const editTransaction = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const transaction = await checkTransactionOwnership(id, userId); // Check ownership
+    await checkTransactionOwnership(id, userId); // Check ownership
 
     // Update transaction fields
     const updateData = { ...req.body };
