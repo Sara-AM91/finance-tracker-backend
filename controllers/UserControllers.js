@@ -35,4 +35,43 @@ const signUpUser = async (req, res) => {
   }
 };
 
-module.exports = { loginUser, signUpUser };
+//GET USER BY ID
+const getUser = async (req, res) => {
+  const userId = req.user._id;
+
+  try {
+    const user = await User.findById(userId).select("-password"); // Exclude password from the response
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+//EDIT USER
+const editUser = async (req, res) => {
+  const userId = req.user._id;
+  const { id } = req.params;
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      id,
+      { ...req.body },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res
+      .status(201)
+      .json({ message: "User details successfully updated:", user });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = { loginUser, signUpUser, getUser, editUser };
