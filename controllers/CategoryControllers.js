@@ -1,35 +1,98 @@
-// Assuming `userId` is the current user's _id
-const getUserCategories = async (userId) => {
-  //get the userId from req.body not as a parameter
-  const categories = await Category.find({
-    $or: [
-      { user: null }, // Global categories
-      { user: userId }, // User's custom categories
-    ],
-  }).sort({ name: 1 }); // Optional: Sort alphabetically
+const Category = require("../models/CategoryModel");
 
-  return categories;
+//Fetch categories (global + user-specific)
+const getUserCategories = async (req, res) => {
+  const userId = req.user._id;
+
+  try {
+    const categories = await Category.find({
+      $or: [{ user: null }, { user: userId }],
+    }).sort({ title: 1 });
+
+    res.status(200).json(categories);
+  } catch (error) {
+    res.status(500).json({
+      error: "Failed to retrieve categories. Please try again later.",
+    });
+  }
 };
 
-//modify it and get the userId and categoryData from req.body
-const createCustomCategory = async (userId, categoryData) => {
-  const { name, categoryType, description } = categoryData;
+const createCustomCategory = async (req, res) => {
+  const userId = req.user._id;
+  const { title, categoryType, description } = req.body;
 
   const category = new Category({
-    name,
+    title,
     categoryType,
     description,
-    user: userId, // Assign the category to the user
+    user: userId,
   });
 
   try {
     await category.save();
-    return category;
+    res.status(201).json(category);
   } catch (error) {
-    // Handle duplicate key error (e.g., category name already exists for the user)
     if (error.code === 11000) {
-      throw new Error("Category name already exists.");
+      res.status(400).json({
+        error:
+          "Category title already exists. Please choose a different title.",
+      });
+    } else {
+      res
+        .status(500)
+        .json({ error: "Failed to create category. Please try again later." });
     }
-    throw error;
   }
+};
+const updateCategoryById = async (req, res) => {
+  const userId = req.user._id;
+  const { id } = req.params;
+
+  try {
+    const category = await Category.findOneAndUpdate(
+      { _id: id, user: userId },
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    if (!category) {
+      return res
+        .status(404)
+        .json({ error: "Category not found or unauthorized access." });
+    }
+
+    res.status(200).json(category);
+  } catch (error) {
+    res.status(400).json({
+      error: "Failed to update category. Please check the data and try again.",
+    });
+  }
+};
+
+const deleteCategoryById = async (req, res) => {
+  const userId = req.user._id;
+  const { id } = req.params;
+
+  try {
+    const category = await Category.findOneAndDelete({ _id: id, user: userId });
+
+    if (!category) {
+      return res
+        .status(404)
+        .json({ error: "Category not found or unauthorized access." });
+    }
+
+    res.status(204).end();
+  } catch (error) {
+    res
+      .status(400)
+      .json({ error: "Failed to delete category. Please try again later." });
+  }
+};
+
+module.exports = {
+  getUserCategories,
+  createCustomCategory,
+  updateCategoryById,
+  deleteCategoryById,
 };
