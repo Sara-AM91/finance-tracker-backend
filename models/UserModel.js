@@ -41,6 +41,9 @@ const UserModel = new mongoose.Schema({
     type: String,
     required: [true, "Password is required"],
   },
+  profilePic: {
+    type: String,
+  },
 });
 
 //Creating a custom static method
