@@ -1,6 +1,21 @@
 const Category = require("../models/CategoryModel");
 
-//Fetch categories (global + user-specific)
+const getCategoriesByType = async (req, res) => {
+  const { categoryType } = req.query;
+  const userId = req.user ? req.user._id : null;
+
+  try {
+    const query = userId
+      ? { categoryType, $or: [{ user: null }, { user: userId }] }
+      : { categoryType, user: null };
+
+    const categories = await Category.find(query);
+    res.status(200).json(categories);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 const getUserCategories = async (req, res) => {
   const userId = req.user._id;
 
@@ -18,32 +33,29 @@ const getUserCategories = async (req, res) => {
 };
 
 const createCustomCategory = async (req, res) => {
-  const userId = req.user._id;
-  const { title, categoryType, description } = req.body;
-
-  const category = new Category({
+  const userId = req.user ? req.user._id : null;
+  const { title, categoryType, description, user } = req.body;
+  const categoryData = {
     title,
     categoryType,
     description,
-    user: userId,
-  });
+    user: user === null ? null : userId,
+  };
+
+  const category = new Category(categoryData);
 
   try {
     await category.save();
     res.status(201).json(category);
   } catch (error) {
     if (error.code === 11000) {
-      res.status(400).json({
-        error:
-          "Category title already exists. Please choose a different title.",
-      });
+      res.status(400).json({ error: "Category name already exists." });
     } else {
-      res
-        .status(500)
-        .json({ error: "Failed to create category. Please try again later." });
+      res.status(500).json({ error: error.message });
     }
   }
 };
+
 const updateCategoryById = async (req, res) => {
   const userId = req.user._id;
   const { id } = req.params;
@@ -95,4 +107,5 @@ module.exports = {
   createCustomCategory,
   updateCategoryById,
   deleteCategoryById,
+  getCategoriesByType,
 };
