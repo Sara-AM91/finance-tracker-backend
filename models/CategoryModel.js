@@ -17,7 +17,6 @@ const CategoryModel = new mongoose.Schema({
   },
   icon: {
     type: String,
-    required: true,
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,

@@ -7,7 +7,7 @@ const {
   changePassword,
   updateProfilePic,
 } = require("../controllers/userControllers");
-const requireAuth = require("../middlewares/requireAuth");
+const { requireAuth } = require("../middlewares/requireAuth");
 const upload = require("../services/upload");
 
 const app = express.Router();
