@@ -53,11 +53,10 @@ const getUser = async (req, res) => {
 //EDIT USER
 const editUser = async (req, res) => {
   const userId = req.user._id;
-  const { id } = req.params;
 
   try {
     const user = await User.findByIdAndUpdate(
-      id,
+      userId,
       { ...req.body },
       { new: true }
     );
