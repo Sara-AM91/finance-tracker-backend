@@ -2,9 +2,12 @@ const Transaction = require("../models/TransactionModel");
 const Category = require("../models/CategoryModel");
 
 //HELPER FUNCTION FOR AUTHORIZATION
+//only owner can access and modify transactions
 const checkTransactionOwnership = async (transactionId, userId) => {
   const transaction = await Transaction.findById(transactionId);
   if (!transaction) throw new Error("Transaction not found.");
+
+  // Check if the transaction belongs to the logged-in user
   if (transaction.user.toString() !== userId.toString())
     throw new Error("Unauthorized.");
   return transaction;
@@ -51,16 +54,23 @@ const getAllTransactions = async (req, res) => {
       filter.amount = { ...filter.amount, $lte: Number(maxAmount) }; // Less than or equal to maxAmount
     }
 
+    if (minAmount && maxAmount && Number(minAmount) > Number(maxAmount)) {
+      return res
+        .status(400)
+        .json({ error: "minAmount cannot be greater than maxAmount." });
+    }
+
     if (description) {
       filter.description = { $regex: description, $options: "i" }; // Case-insensitive search
     }
 
-    const transactions = await Transaction.find(filter);
+    const transactions = await Transaction.find(filter).populate(
+      "category",
+      "name"
+    );
 
     if (!transactions.length) {
-      return res
-        .status(200)
-        .json({ message: "There are no transactions in database yet." });
+      return res.status(200).json({ message: "No transactions found." });
     }
     res.status(200).json({ transactions });
   } catch (error) {
@@ -76,6 +86,10 @@ const getOneTransaction = async (req, res) => {
   try {
     await checkTransactionOwnership(id, userId);
     const transaction = await Transaction.findById(id);
+
+    if (!transaction) {
+      return res.status(404).json({ error: "Transaction not found." });
+    }
 
     res.status(200).json({ transaction });
   } catch (error) {
@@ -115,6 +129,11 @@ const deleteTransaction = async (req, res) => {
     await checkTransactionOwnership(id, userId);
 
     await Transaction.findByIdAndDelete(id);
+
+    await Category.findByIdAndUpdate(transaction.category, {
+      $pull: { transactions: transaction._id },
+    });
+
     res.status(200).json({ message: "Transaction deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -131,6 +150,12 @@ const createTransaction = async (req, res) => {
     const categoryExists = await Category.findById(category);
     if (!categoryExists) {
       return res.status(404).json({ message: "Category not found." });
+    }
+
+    if (amount <= 0) {
+      return res
+        .status(400)
+        .json({ error: "Amount must be greater than zero." });
     }
 
     const transaction = await Transaction.create({
