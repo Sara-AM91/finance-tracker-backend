@@ -61,7 +61,7 @@ const getAllTransactions = async (req, res) => {
 
     const transactions = await Transaction.find(filter).populate(
       "category",
-      "name"
+      "title"
     );
 
     if (!transactions.length) {
@@ -83,7 +83,7 @@ const getOneTransaction = async (req, res) => {
     await checkTransactionOwnership(id, userId);
     const transaction = await Transaction.findById(id).populate(
       "category",
-      "name"
+      "title"
     );
 
     if (!transaction) {
@@ -116,7 +116,7 @@ const editTransaction = async (req, res) => {
       id,
       updateData,
       { new: true }
-    ).populate("category", "name");
+    ).populate("category", "title");
 
     res.status(200).json({
       message: "Transaction successfully updated:",
