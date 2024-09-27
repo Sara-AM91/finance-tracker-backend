@@ -7,7 +7,7 @@ const {
   changePassword,
   updateProfilePic,
 } = require("../controllers/userControllers");
-const { requireAuth } = require("../middlewares/requireAuth");
+const requireAuth = require("../middlewares/requireAuth");
 const upload = require("../services/upload");
 
 const app = express.Router();
@@ -19,14 +19,15 @@ app.post("/login", loginUser);
 app.post("/signup", signUpUser);
 
 //
-app.get("/", requireAuth, getUser);
+app.use(requireAuth);
+app.get("/", getUser);
 app.put(
   "/profile/picture",
-  requireAuth,
+
   upload.single("profilePic"),
   updateProfilePic
 );
-app.put("/profile/password", requireAuth, changePassword);
-app.put("/profile/details", requireAuth, editUser);
+app.put("/profile/password", changePassword);
+app.put("/profile/details", editUser);
 
 module.exports = app;

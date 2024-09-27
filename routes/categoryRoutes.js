@@ -9,19 +9,16 @@ const {
   getGlobalCategories,
 } = require("../controllers/categoryControllers");
 
-const { requireAuth } = require("../middlewares/requireAuth");
+const requireAuth = require("../middlewares/requireAuth");
 
-app
-  .route("/")
-  .get(requireAuth, getUserCategories)
-  .post(requireAuth, createCustomCategory);
-
-app.get("/filter", requireAuth, getCategoriesByType);
 app.get("/global", getGlobalCategories);
 
-app
-  .route("/:id")
-  .put(requireAuth, updateCategoryById)
-  .delete(requireAuth, deleteCategoryById);
+app.use(requireAuth);
+
+app.route("/").get(getUserCategories).post(createCustomCategory);
+
+app.get("/filter", getCategoriesByType);
+
+app.route("/:id").put(updateCategoryById).delete(deleteCategoryById);
 
 module.exports = app;
