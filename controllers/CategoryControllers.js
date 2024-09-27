@@ -21,7 +21,6 @@ const getCategoriesByType = async (req, res) => {
 
 const getGlobalCategories = async (req, res) => {
   const { categoryType } = req.query;
-
   try {
     const categories = await Category.find({
       categoryType,
