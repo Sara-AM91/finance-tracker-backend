@@ -24,10 +24,28 @@ const getAllTransactions = async (req, res) => {
     minAmount,
     maxAmount,
     description,
+    createdDate,
   } = req.query;
 
   try {
+    console.log("Received query parameters:", req.query);
     const filter = { user: userId }; // Only fetch transactions belonging to the user
+
+    // Handle createdDate filter
+    if (createdDate && createdDate !== "undefined") {
+      console.log("Filtering by Created Date:", createdDate);
+
+      // Create a start and end time for the given day
+      const startOfDay = new Date(createdDate);
+      startOfDay.setHours(0, 0, 0, 0); // Set start time to 00:00:00
+      const endOfDay = new Date(createdDate);
+      endOfDay.setHours(23, 59, 59, 999); // Set end time to 23:59:59
+
+      // Use `createdAt` field for filtering in the date range
+      filter.createdAt = { $gte: startOfDay, $lte: endOfDay };
+    }
+
+    console.log("Final Filter Object:", filter); // Log the filter object
 
     // Apply category filter if provided
     if (category) {
@@ -59,6 +77,7 @@ const getAllTransactions = async (req, res) => {
       filter.description = { $regex: description, $options: "i" };
     }
 
+    // Fetch transactions based on the constructed filter
     const transactions = await Transaction.find(filter).populate(
       "category",
       "title"
@@ -70,6 +89,7 @@ const getAllTransactions = async (req, res) => {
 
     res.status(200).json({ transactions });
   } catch (error) {
+    console.error("Error fetching transactions:", error); // Log detailed error
     res.status(500).json({ error: error.message });
   }
 };
