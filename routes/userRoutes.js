@@ -6,7 +6,7 @@ const {
   editUser,
   changePassword,
   updateProfilePic,
-} = require("../controllers/userControllers");
+} = require("../controllers/UserControllers");
 const requireAuth = require("../middlewares/requireAuth");
 const upload = require("../services/upload");
 
