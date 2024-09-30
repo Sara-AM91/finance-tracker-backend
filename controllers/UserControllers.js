@@ -55,17 +55,18 @@ const getUser = async (req, res) => {
 //EDIT USER DETAILS
 const editUser = async (req, res) => {
   const userId = req.user._id;
-  const { firstName, lastName, email } = req.body;
+  const { firstName, lastName, email, address, city, zipCode, country, phone } =
+    req.body;
 
   try {
     const existingMail = await User.findOne({ email, _id: { $ne: userId } }); // Exclude current user
     if (existingMail) {
       return res.status(400).json({ error: "Email already exists" });
     }
-
+    console.log(req.body);
     const user = await User.findByIdAndUpdate(
       userId,
-      { firstName, lastName, email },
+      { firstName, lastName, email, address, city, zipCode, country, phone },
       { new: true }
     );
 
@@ -102,7 +103,9 @@ const updateProfilePic = async (req, res) => {
 
     res.status(200).json({ message: "User profile picture updated", user });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message }); // Return a clear error message
   }
 };
 

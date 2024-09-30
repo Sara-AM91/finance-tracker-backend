@@ -43,6 +43,23 @@ const UserModel = new mongoose.Schema({
   },
   profilePic: {
     type: String,
+    default:
+      "https://png.pngtree.com/png-vector/20191119/ourmid/pngtree-beautiful-profile-glyph-vector-icon-png-image_2002807.jpg",
+  },
+  address: {
+    type: String,
+  },
+  city: {
+    type: String,
+  },
+  zipCode: {
+    type: String,
+  },
+  country: {
+    type: String,
+  },
+  phone: {
+    type: String,
   },
 });
 
