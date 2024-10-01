@@ -4,7 +4,6 @@ const CategoryModel = new mongoose.Schema({
   title: {
     type: String,
     required: true,
-    unique: true,
   },
   //Expenses Categories:Transportation,Educations, ... and Income Categories:Freelance,Investments,...
   categoryType: {
@@ -25,5 +24,5 @@ const CategoryModel = new mongoose.Schema({
   },
 });
 
-CategoryModel.index({ title: 1, user: 1 }, { unique: true });
+CategoryModel.index({ title: 1, categoryType: 1, user: 1 }, { unique: true });
 module.exports = mongoose.model("Category", CategoryModel);

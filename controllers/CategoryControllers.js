@@ -37,6 +37,7 @@ const getUserCategories = async (req, res) => {
   const userId = req.user._id;
 
   try {
+    await Category.syncIndexes();
     const categories = await Category.find({
       $or: [{ user: null }, { user: userId }],
     }).sort({ title: 1 });
