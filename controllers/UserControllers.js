@@ -158,6 +158,49 @@ const changePassword = async (req, res) => {
   }
 };
 
+//DEACTIVATE ACCOUNT
+const deactiveAccount = async (req, res) => {
+  const userId = req.user._id;
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { isActive: false },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "User account has been succesfully deactivated" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+//ADD ACTIVE TO USER
+const addActive = async (req, res) => {
+  const userId = req.user._id;
+  try {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { isActive: true },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ message: "User account added the isActiev Field" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   loginUser,
   signUpUser,
@@ -165,4 +208,6 @@ module.exports = {
   editUser,
   changePassword,
   updateProfilePic,
+  deactiveAccount,
+  addActive,
 };

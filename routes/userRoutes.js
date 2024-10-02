@@ -6,6 +6,8 @@ const {
   editUser,
   changePassword,
   updateProfilePic,
+  deactiveAccount,
+  addActive,
 } = require("../controllers/UserControllers");
 const requireAuth = require("../middlewares/requireAuth");
 const upload = require("../services/upload");
@@ -29,5 +31,9 @@ app.put(
 );
 app.put("/profile/password", changePassword);
 app.put("/profile/details", editUser);
+app.put("/profile/deactivate", deactiveAccount);
+
+//add active field in user (set to true)
+app.put("/isActive", addActive);
 
 module.exports = app;
