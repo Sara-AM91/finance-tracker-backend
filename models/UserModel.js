@@ -61,6 +61,10 @@ const UserModel = new mongoose.Schema({
   phone: {
     type: String,
   },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 //Creating a custom static method
@@ -76,7 +80,7 @@ UserModel.statics.signup = async function (
   }
 
   //Check if the email is already registered
-  const existingUser = await this.findOne({ email });
+  const existingUser = await this.findOne({ email, isActive: true });
   if (existingUser) {
     throw new ValidationError("Email already exists");
   }
@@ -120,10 +124,10 @@ UserModel.statics.login = async function (email, password) {
   }
 
   //Check if the user exists
-  const user = await this.findOne({ email });
+  const user = await this.findOne({ email, isActive: true });
 
   if (!user) {
-    throw Error("Incorrect email");
+    throw Error("Email not found or the account has been deactivated");
   }
 
   //Compare the provided password with the hashed password
