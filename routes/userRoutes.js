@@ -21,8 +21,8 @@ app.post("/login", loginUser);
 app.post("/signup", signUpUser);
 
 //
+app.get("/:userId", getUser);
 app.use(requireAuth);
-app.get("/", getUser);
 app.put(
   "/profile/picture",
 
