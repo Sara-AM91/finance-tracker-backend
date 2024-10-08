@@ -24,5 +24,9 @@ app.use("/user", userRoutes);
 app.use("/categories", categoryRoutes);
 app.use("/transactions", transactionRoutes);
 
+app.get("/", (req, res) => {
+  res.send("Welcome to our Finance Tracker API!");
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
