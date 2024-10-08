@@ -7,7 +7,7 @@ const {
   deleteCategoryById,
   getCategoriesByType,
   getGlobalCategories,
-} = require("../controllers/categoryControllers");
+} = require("../controllers/CategoryControllers");
 
 const requireAuth = require("../middlewares/requireAuth");
 
